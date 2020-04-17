@@ -14,12 +14,15 @@ class GradientCircularProgressRouteState
     with TickerProviderStateMixin {
   AnimationController _animationController;
 
+  String statetype = 'sd';
+// 当Widget 第一次插入到Widget树时，该方法会被调用，且只会调用一次
   @override
   void initState() {
     super.initState();
-    _animationController =
-    new AnimationController(vsync: this, duration: Duration(seconds: 3));
+    // 初始化状态
+    _animationController = new AnimationController(vsync: this, duration: Duration(seconds: 3));
     bool isForward = true;
+    // 添加状态监听器
     _animationController.addStatusListener((status) {
       if (status == AnimationStatus.forward) {
         isForward = true;
@@ -37,13 +40,45 @@ class GradientCircularProgressRouteState
     _animationController.forward();
   }
 
+// 当widget重新构建时，Flutter framework会调用Widget.canUpdate来检测新旧widget的key和runtimeType是否同时相等，如果是则会调用该方法
+  @override
+  void didUpdateWidget(GradientCircularProgressRoute oldWidget){
+    super.didUpdateWidget(oldWidget);
+  }
 
+// 更新State对象
+void changeState(){
+  setState(() {
+    statetype = 'sd';
+  });
+}
+
+// 当State对象的依赖发生变化时会被调用（典型场景是系统语言或应用主题改变时，flutter framework会通知widget调用该方法）
+  @override
+  void didChangeDependencies(){
+    super.didChangeDependencies();
+  }
+
+// 开发环境下热重载时会被调用
+  @override
+  void reassemble(){
+    super.reassemble();
+  }
+
+// 当State对象从树中被移除时，会调用此回调
+  @override
+  void deactivate(){
+    super.deactivate();
+  }
+
+// 当State对象从树中被永久移除时调用，释放资源
   @override
   void dispose() {
+    // 
     _animationController.dispose();
     super.dispose();
   }
-
+// 在 initState() 或 didUpdateWidget() 或 setState() 或 didChangeDependencies() 或 deactivate() 后调用该方法（也就是当State对象有点变化就会调用）
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(

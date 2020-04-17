@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'dart:async';
+import 'package:flutter/services.dart' show rootBundle;
 const kAndroidUserAgent =
     'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Mobile Safari/537.36';
 
@@ -24,6 +26,8 @@ void main() {
 class WebView extends StatelessWidget {
   final flutterWebViewPlugin = FlutterWebviewPlugin();
 
+
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -33,8 +37,8 @@ class WebView extends StatelessWidget {
       ),
       routes: {
         '/': (_) => const WebViewPage(title: 'WebView'),
-        '/widget': (_) {
-          return WebviewScaffold(
+        '/widget': (_) => 
+         new WebviewScaffold(
             url: selectedUrl,
             javascriptChannels: jsChannels,
             mediaPlaybackRequiresUserGesture: false,
@@ -74,8 +78,7 @@ class WebView extends StatelessWidget {
             //     ],
             //   ),
             // ),
-          );
-        },
+          ),
       },
     );
   }
@@ -209,6 +212,17 @@ class _MyHomePageState extends State<WebViewPage> {
     super.dispose();
   }
 
+  void loadJS(String name) async {
+    final givenJS = rootBundle.loadString('assets/js/$name.js');
+    return givenJS.then((String js) {
+      flutterWebViewPlugin.onStateChanged.listen((viewState) async {
+        if (viewState.type == WebViewState.finishLoad) {
+          flutterWebViewPlugin.evalJavascript(js);
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -261,10 +275,13 @@ class _MyHomePageState extends State<WebViewPage> {
             ),
             RaisedButton(
               onPressed: () {
-                final future = flutterWebViewPlugin.evalJavascript(_codeCtrl.text);
-                future.then((String result) {
-                  setState(() {
-                    _history.add('eval: $result');
+                // 异步读取test.js文件,注入webview
+                rootBundle.loadString('assets/js/test.js').then((String js) {
+                  final future = flutterWebViewPlugin.evalJavascript(js);
+                  future.then((String result) {
+                    setState(() {
+                      _history.add('eval: $result');
+                    });
                   });
                 });
               },
@@ -272,6 +289,7 @@ class _MyHomePageState extends State<WebViewPage> {
             ),
             RaisedButton(
               onPressed: () {
+                // webview js代码注入回调
                 final future = flutterWebViewPlugin.evalJavascript('alert("Hello World");');
                 future.then((String result) {
                   setState(() {
